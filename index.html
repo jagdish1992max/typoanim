@@ -1,13 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Typography Video Generator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Typography Video Generator</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;background:#0f0f0f;color:white;margin:0;padding:20px;text-align:center}
+.container{max-width:900px;margin:auto}
+textarea{width:100%;height:120px;border-radius:10px;border:none;padding:10px;font-size:16px}
+button{padding:12px 18px;margin:8px;border:none;border-radius:10px;background:#4f46e5;color:white;font-size:16px;cursor:pointer}
+select,input{padding:10px;border-radius:8px;border:none;margin:6px}
+canvas{background:black;border-radius:10px;margin-top:20px;width:360px;height:640px}
+</style>
 </head>
 <body>
-    <h1>Welcome to AI Typography Video Generator</h1>
-    <p>This application allows you to generate videos with AI-powered typography.</p>
-    <!-- Add your application logic here -->
-</body>
-</html>
+<div class="container">
+<h2>AI Typography Video Generator</h2><textarea id="script" placeholder="Paste your script here...\nEach line becomes animation"></textarea><br/><label>Animation</label> <select id="animation">
+
+<option value="fade">Fade</option>
+<option value="slide">Slide</option>
+<option value="zoom">Zoom</option>
+</select><label>Text Color</label> <input type="color" id="color" value="#ffffff"/>
+
+<br/>
+<button onclick="generate()">Generate Preview</button>
+<button onclick="downloadVideo()">Download Video</button>
+<button onclick="autoScript()">AI Script</button><br/>
+<audio id="music" controls>
+<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_5b0f8c3a0a.mp3" type="audio/mp3">
+</audio><canvas id="canvas" width="1080" height="1920"></canvas>
+
+</div><script>
+const canvas=document.getElementById('canvas')
+const ctx=canvas.getContext('2d')
+let lines=[]
+let index=0
+
+function generate(){
+lines=document.getElementById('script').value.split('\n')
+index=0
+animate()
+}
+
+function animate(){
+ctx.fillStyle="black"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle=document.getElementById('color').value
+ctx.font="bold 80px Arial"
+ctx.textAlign="center"
+
+let text=lines[index]
+let anim=document.getElementById('animation').value
+
+if(anim==='fade'){
+ctx.globalAlpha=(Math.sin(Date.now()/300)+1)/2
+ctx.fillText(text,canvas.width/2,canvas.height/2)
+ctx.globalAlpha=1
+}
+
+if(anim==='slide'){
+let x=(Date.now()/2)%canvas.width
+ctx.fillText(text,x,canvas.height/2)
+}
+
+if(anim==='zoom'){
+let size=60+Math.sin(Date.now()/200)*40
+ctx.font="bold "+size+"px Arial"
+ctx.fillText(text,canvas.width/2,canvas.height/2)
+}
+
+requestAnimationFrame(animate)
+}
+
+function autoScript(){
+let prompts=[
+"Har din hum phone unlock karte hain",
+"Lekin sach ye hai",
+"Phone hume use kar raha hai",
+"Aur hume pata bhi nahi chalta",
+"Scroll... Scroll... Scroll"
+]
+
+document.getElementById('script').value=prompts.join('\n')
+}
+
+function downloadVideo(){
+let stream=canvas.captureStream(30)
+let recorder=new MediaRecorder(stream)
+let chunks=[]
+
+recorder.ondataavailable=e=>chunks.push(e.data)
+
+recorder.onstop=e=>{
+let blob=new Blob(chunks,{type:'video/webm'})
+let url=URL.createObjectURL(blob)
+let a=document.createElement('a')
+
+a.href=url
+
+a.download='typography-video.webm'
+
+a.click()
+}
+
+recorder.start()
+
+setTimeout(()=>recorder.stop(),5000)
+}
+</script></body>
+    </html>
